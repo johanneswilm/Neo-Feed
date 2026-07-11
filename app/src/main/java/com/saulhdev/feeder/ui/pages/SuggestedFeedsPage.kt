@@ -73,6 +73,8 @@ private val languageStringRes =
         "fr" to R.string.lang_fr,
         "en" to R.string.lang_en,
         "es" to R.string.lang_es,
+        "sk" to R.string.lang_sk,
+        "de" to R.string.lang_de,
         "youtube" to R.string.lang_youtube,
     )
 

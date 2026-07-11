@@ -525,6 +525,126 @@ object SuggestedFeedsData {
                     ),
             ),
             FeedLanguageGroup(
+                key = "sk",
+                icon = Phosphor.Globe,
+                categories =
+                    listOf(
+                        SuggestedCategory(
+                            key = "news",
+                            icon = Phosphor.Newspaper,
+                            feeds =
+                                listOf(
+                                    SuggestedFeed(
+                                        title = "DR",
+                                        url = "https://www.dr.dk/nyheder/service/feeds/allenyheder",
+                                        description = "Danish public-service news",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "NRK",
+                                        url = "https://www.nrk.no/toppsaker.rss",
+                                        description = "Norwegian public-service news",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "SVT Nyheter",
+                                        url = "https://www.svt.se/nyheter/rss.xml",
+                                        description = "Swedish public-service news",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Dagens Nyheter",
+                                        url = "https://www.dn.se/rss/",
+                                        description = "Swedish daily newspaper",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Hufvudstadsbladet",
+                                        url = "https://www.hbl.fi/feed/",
+                                        description = "Swedish-language news from Finland",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Västra Nyland",
+                                        url = "https://www.vastranyland.fi/feed/",
+                                        description = "Swedish-language news from western Finland",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Östnyland",
+                                        url = "https://www.ostnyland.fi/feed/",
+                                        description = "Swedish-language news from eastern Finland",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Åbo Underrättelser",
+                                        url = "https://www.abounderrattelser.fi/feed/",
+                                        description = "Swedish-language news from Turku, Finland",
+                                    ),
+                                ),
+                        ),
+                    ),
+            ),
+            FeedLanguageGroup(
+                key = "de",
+                icon = Phosphor.Globe,
+                categories =
+                    listOf(
+                        SuggestedCategory(
+                            key = "news",
+                            icon = Phosphor.Newspaper,
+                            feeds =
+                                listOf(
+                                    SuggestedFeed(
+                                        title = "tagesschau",
+                                        url = "https://www.tagesschau.de/xml/rss2",
+                                        description = "German public-service television news",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "ZDF heute",
+                                        url = "https://www.zdf.de/rss/zdf/nachrichten",
+                                        description = "German public-service television news",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Deutschlandfunk",
+                                        url = "https://www.deutschlandfunk.de/die-nachrichten.353.de.rss",
+                                        description = "German public-service radio news",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "NDR Info",
+                                        url = "https://www.ndr.de/nachrichten/info/index-rss.xml",
+                                        description = "North German public-service radio news",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "BR24",
+                                        url = "https://www.br.de/nachrichten/meldungen/nachrichten-bayerischer-rundfunk100~newsRss.xml",
+                                        description = "Bavarian public-service radio news",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "WDR",
+                                        url = "https://www.wdr.de/xml/newsticker.rdf",
+                                        description = "West German public-service radio news",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "taz",
+                                        url = "https://taz.de/!p4608;rss",
+                                        description = "German left-leaning daily newspaper",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "DIE ZEIT",
+                                        url = "https://newsfeed.zeit.de/index",
+                                        description = "German weekly newspaper",
+                                    ),
+                                ),
+                        ),
+                        SuggestedCategory(
+                            key = "tech",
+                            icon = Phosphor.Browser,
+                            feeds =
+                                listOf(
+                                    SuggestedFeed(
+                                        title = "Heise",
+                                        url = "https://www.heise.de/rss/heise-atom.xml",
+                                        description = "German technology news",
+                                    ),
+                                ),
+                        ),
+                    ),
+            ),
+            FeedLanguageGroup(
                 key = "es",
                 icon = Phosphor.Globe,
                 categories =
@@ -540,6 +660,11 @@ object SuggestedFeedsData {
                                         description = "Noticias de México y el mundo",
                                     ),
                                     SuggestedFeed(
+                                        title = "Excélsior",
+                                        url = "https://www.excelsior.com.mx/rss",
+                                        description = "Noticias de México",
+                                    ),
+                                    SuggestedFeed(
                                         title = "teleSUR",
                                         url = "https://www.telesurtv.net/rss",
                                         description = "Noticias latinoamericanas",
@@ -551,7 +676,7 @@ object SuggestedFeedsData {
                                     ),
                                     SuggestedFeed(
                                         title = "La Nación",
-                                        url = "https://www.nacion.com/arc/outboundfeeds/rss/",
+                                        url = "https://www.nacion.com/arc/outboundfeeds/rss/?outputType=xml",
                                         description = "Noticias de Costa Rica",
                                     ),
                                     SuggestedFeed(
@@ -563,6 +688,66 @@ object SuggestedFeedsData {
                                         title = "Tiempo Argentino",
                                         url = "https://www.tiempoar.com.ar/rss",
                                         description = "Noticias de Argentina",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "El País",
+                                        url = "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada",
+                                        description = "Noticias de España",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "El Mundo",
+                                        url = "https://www.elmundo.es/rss/index.xml",
+                                        description = "Noticias de España",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "eldiario.es",
+                                        url = "https://www.eldiario.es/rss/",
+                                        description = "Noticias de España",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "El Espectador",
+                                        url = "https://www.elespectador.com/arc/outboundfeeds/discover/?outputType=xml",
+                                        description = "Noticias de Colombia",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "El Comercio",
+                                        url = "https://www.elcomercio.com/feed/",
+                                        description = "Noticias de Ecuador",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Página Siete",
+                                        url = "https://www.paginasiete.bo/feed/",
+                                        description = "Noticias de Bolivia",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Hoy",
+                                        url = "https://www.hoy.com.py/feed/",
+                                        description = "Noticias de Paraguay",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Prensa Libre",
+                                        url = "https://www.prensalibre.com/feed/",
+                                        description = "Noticias de Guatemala",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "El Faro",
+                                        url = "https://elfaro.net/es/feed/",
+                                        description = "Noticias de El Salvador",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Gato Encerrado",
+                                        url = "https://gatoencerrado.news/feed/",
+                                        description = "Noticias de El Salvador",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Confidencial",
+                                        url = "https://confidencial.digital/feed/",
+                                        description = "Noticias de Nicaragua",
+                                    ),
+                                    SuggestedFeed(
+                                        title = "Criterio",
+                                        url = "https://criterio.hn/feed/",
+                                        description = "Noticias de Honduras",
                                     ),
                                 ),
                         ),

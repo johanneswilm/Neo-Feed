@@ -25,12 +25,14 @@ import com.saulhdev.feeder.data.db.models.FeedItem
 import com.saulhdev.feeder.data.entity.SORT_CHRONOLOGICAL
 import com.saulhdev.feeder.data.entity.SORT_SOURCE
 import com.saulhdev.feeder.data.entity.SORT_TITLE
+import com.saulhdev.feeder.utils.blobInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
+import java.io.File
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ArticleRepository(
@@ -46,13 +48,39 @@ class ArticleRepository(
             articlesDao.deleteArticles(ids)
         }
 
-    suspend fun getArticleByGuid(
-        guid: String,
-        feedId: Long,
-    ): Article? =
-        withContext(jcc) {
+    suspend fun deleteArticlesForFeed(feedId: Long) = withContext(jcc) {
+        articlesDao.deleteFeedArticle(feedId)
+    }
+
+    suspend fun deleteArticlesMatchingWords(words: Set<String>, filesDir: File) = withContext(jcc) {
+        val blocked = words.map { it.lowercase() }.filter { it.isNotBlank() }
+        if (blocked.isEmpty()) return@withContext
+        val articles = articlesDao.loadAllEnabledArticles()
+        val toDelete = articles.mapNotNull { article ->
+            val haystack = buildString {
+                append(article.title)
+                append(article.plainTitle)
+                append(article.description)
+                append(article.plainSnippet)
+                article.author?.let { append(it) }
+                article.link?.let { append(it) }
+                try {
+                    blobInputStream(article.uuid, filesDir).bufferedReader().use { append(it.readText()) }
+                } catch (_: Throwable) {
+                }
+            }.lowercase()
+            if (blocked.any { haystack.contains(it) }) article.uuid else null
+        }
+        if (toDelete.isNotEmpty()) {
+            articlesDao.deleteArticles(toDelete)
+        }
+    }
+
+    suspend fun getArticleByGuid(guid: String, feedId: Long): Article? {
+        return withContext(jcc) {
             articlesDao.loadArticle(guid = guid, feedId = feedId)
         }
+    }
 
     fun getArticleById(articleId: String): Flow<Article?> =
         articlesDao

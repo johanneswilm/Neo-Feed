@@ -17,6 +17,9 @@ import com.saulhdev.feeder.data.content.FeedPreferences.Companion.prefsModule
 import com.saulhdev.feeder.data.db.NeoFeedDb
 import com.saulhdev.feeder.data.repository.ArticleRepository
 import com.saulhdev.feeder.data.repository.SourcesRepository
+import com.saulhdev.feeder.manager.mastodon.MastodonApi
+import com.saulhdev.feeder.manager.mastodon.MastodonAuth
+import com.saulhdev.feeder.manager.mastodon.MastodonStorage
 import com.saulhdev.feeder.manager.service.OverlayBridge
 import com.saulhdev.feeder.manager.sync.SyncRestClient
 import com.saulhdev.feeder.utils.ApplicationCoroutineScope
@@ -24,6 +27,7 @@ import com.saulhdev.feeder.utils.extensions.ToastMaker
 import com.saulhdev.feeder.utils.extensions.restartApp
 import com.saulhdev.feeder.viewmodels.ArticleListViewModel
 import com.saulhdev.feeder.viewmodels.ArticleViewModel
+import com.saulhdev.feeder.viewmodels.MastodonAuthViewModel
 import com.saulhdev.feeder.viewmodels.SearchFeedViewModel
 import com.saulhdev.feeder.viewmodels.SortFilterViewModel
 import com.saulhdev.feeder.viewmodels.SourceEditViewModel
@@ -66,6 +70,7 @@ class NeoApp :
         viewModelOf(::SourceListViewModel)
         viewModelOf(::ArticleViewModel)
         viewModelOf(::SortFilterViewModel)
+        viewModelOf(::MastodonAuthViewModel)
     }
 
     // TODO Move to its class
@@ -86,6 +91,9 @@ class NeoApp :
             singleOf(::ArticleRepository)
             singleOf(::SourcesRepository)
             singleOf(::SyncRestClient)
+            singleOf(::MastodonStorage)
+            singleOf(::MastodonAuth)
+            singleOf(::MastodonApi)
         }
 
     private val coreModule = module {

@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 9,
-    "identityHash": "871817c742b54d8ee5060ca58515d0b3",
+    "version": 11,
+    "identityHash": "3251040f1ade49a8dfb02d4ef527d643",
     "entities": [
       {
         "tableName": "Feeds",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `url` TEXT NOT NULL, `feedImage` TEXT NOT NULL, `lastSync` INTEGER NOT NULL, `alternateId` INTEGER NOT NULL, `fullTextByDefault` INTEGER NOT NULL, `tag` TEXT NOT NULL, `currentlySyncing` INTEGER NOT NULL, `isEnabled` INTEGER NOT NULL, `sourceType` TEXT NOT NULL DEFAULT 'rss')",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `url` TEXT NOT NULL, `feedImage` TEXT NOT NULL, `lastSync` INTEGER NOT NULL, `alternateId` INTEGER NOT NULL, `fullTextByDefault` INTEGER NOT NULL, `tag` TEXT NOT NULL, `currentlySyncing` INTEGER NOT NULL, `isEnabled` INTEGER NOT NULL, `sourceType` TEXT NOT NULL DEFAULT 'rss', `requireLink` INTEGER NOT NULL DEFAULT 0, `requireImage` INTEGER NOT NULL DEFAULT 0, `excludeReplies` INTEGER NOT NULL DEFAULT 1)",
         "fields": [
           {
             "fieldPath": "id",
@@ -80,6 +80,27 @@
             "affinity": "TEXT",
             "notNull": true,
             "defaultValue": "'rss'"
+          },
+          {
+            "fieldPath": "requireLink",
+            "columnName": "requireLink",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "requireImage",
+            "columnName": "requireImage",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "excludeReplies",
+            "columnName": "excludeReplies",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
           }
         ],
         "primaryKey": {
@@ -285,7 +306,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '871817c742b54d8ee5060ca58515d0b3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3251040f1ade49a8dfb02d4ef527d643')"
     ]
   }
 }

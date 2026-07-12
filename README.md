@@ -36,6 +36,8 @@ This is a community-maintained, vibe-coded modification of [Neo Feed](https://gi
 - **Keyboard fix** — Resolves the long-standing bug where the on-screen keyboard would not appear in a launcher's app drawer while Neo-Feed was enabled ([upstream issue #56](https://github.com/NeoApplications/Neo-Feed/issues/56)).
 - **Folder crash fix for Neo-Launcher** — Applies the matching folder-crash fix to [Neo-Launcher](https://github.com/NeoApplications/Neo-Launcher) so app folders open reliably again.
 - **Integrated community improvements** — Pulls in useful changes developed by other contributors around Neo-Feed.
+- **Sort & filter fixes** — The filter sheet now correctly pre-selects the current sort direction, source/tag filters apply immediately when toggled, and chronological sorting uses clearer "Newest / Oldest" labels.
+- **HTTP → HTTPS feed handling** — New feeds default to `https://`, existing `http://` feed URLs are upgraded on sync, and cleartext traffic is permitted so misconfigured servers (e.g. SCMP's `https → http → https` redirect chain) no longer fail to sync.
 - **Expanded suggested feeds** — Adds new suggested-feed catalogues, including **Scandinavian**, **German**, and more **Spanish-language** sources.
 - **Mastodon account source** — Lets you add a Mastodon home timeline as a feed source. For each Mastodon source you can configure:
   - **Must contain a link** — only show posts that include at least one URL.

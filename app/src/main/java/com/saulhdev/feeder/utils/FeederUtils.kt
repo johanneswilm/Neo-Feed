@@ -112,15 +112,42 @@ fun getBackgroundOptions(context: Context): Map<String, String> {
 }
 
 /**
- * Ensures a url is valid, having a scheme and everything. It turns 'google.com' into 'http://google.com' for example.
+ * Ensures a url is valid, having a scheme and everything. It turns 'google.com' into 'https://google.com'.
+ * Existing http:// URLs for normal domain names are upgraded to https://.
  */
-fun sloppyLinkToStrictURL(url: String): URL =
-    try {
+fun sloppyLinkToStrictURL(url: String): URL {
+    return try {
         // If no exception, it's valid
-        URL(url)
+        URL(url).toHttpsIfNeeded()
     } catch (_: MalformedURLException) {
-        URL("http://$url")
+        URL("https://$url")
     }
+}
+
+/**
+ * Upgrades an http:// URL to https:// for public domain names.
+ * Localhost and numeric IP addresses are left unchanged.
+ */
+fun URL.toHttpsIfNeeded(): URL {
+    return if (protocol == "http" && host.isNotEmpty() && !host.isLocalHost()) {
+        try {
+            URL(toString().replaceFirst("http://", "https://"))
+        } catch (_: Exception) {
+            this
+        }
+    } else {
+        this
+    }
+}
+
+private fun String.isLocalHost(): Boolean {
+    return this == "localhost" ||
+            this == "127.0.0.1" ||
+            this == "::1" ||
+            matches(IPV4_REGEX)
+}
+
+private val IPV4_REGEX = """^(\d{1,3}\.){3}\d{1,3}$""".toRegex()
 
 /**
  * Returns a URL but does not guarantee that it accurately represents the input string if the input string is an invalid URL.

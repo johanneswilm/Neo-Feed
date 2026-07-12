@@ -36,6 +36,7 @@ import com.saulhdev.feeder.utils.blobFile
 import com.saulhdev.feeder.utils.blobOutputStream
 import com.saulhdev.feeder.utils.getSyncDays
 import com.saulhdev.feeder.utils.sloppyLinkToStrictURLNoThrows
+import com.saulhdev.feeder.utils.toHttpsIfNeeded
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -290,18 +291,6 @@ private suspend fun syncFeed(
 }
 
 class ResponseFailure(message: String?) : Exception(message)
-
-fun java.net.URL.toHttpsIfNeeded(): java.net.URL {
-    return if (protocol == "http") {
-        try {
-            java.net.URL(toString().replaceFirst("http://", "https://"))
-        } catch (_: Exception) {
-            this
-        }
-    } else {
-        this
-    }
-}
 
 fun List<Pair<Article, String>>.filterBlockedWords(): List<Pair<Article, String>> {
     val blocked = prefs.blockedWords.getValue()

@@ -150,7 +150,7 @@ fun SortFilterSheet(
                             SelectChip(
                                 text = it.value,
                                 checked = it.key == sortOption,
-                                alwaysShowIcon = false,
+                                alwaysShowIcon = true,
                             ) {
                                 sortOption = it.key
                             }

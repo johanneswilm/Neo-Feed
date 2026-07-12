@@ -40,6 +40,17 @@
             android:checkable="true" />
     </com.google.android.material.chip.ChipGroup>
 
+    <TextView
+        android:id="@+id/tv_sort_direction_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/small_margin"
+        android:paddingHorizontal="4dp"
+        android:text="@string/first_item"
+        android:visibility="invisible"
+        android:textAppearance="?attr/textAppearanceLabelMedium"
+        android:textColor="?attr/colorOnSurfaceVariant" />
+
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/toggle_sort_direction"
         android:layout_width="match_parent"
@@ -47,18 +58,6 @@
         android:layout_marginTop="@dimen/small_margin"
         app:singleSelection="true"
         app:selectionRequired="true">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_sort_asc"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/sort_ascending"
-            android:checkable="true"
-            android:checked="true"
-            app:icon="@drawable/ic_sort_ascending"
-            app:iconGravity="start" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_sort_desc"
@@ -70,6 +69,18 @@
             android:checkable="true"
             android:checked="false"
             app:icon="@drawable/ic_sort_descending"
+            app:iconGravity="start" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_sort_asc"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/sort_ascending"
+            android:checkable="true"
+            android:checked="false"
+            app:icon="@drawable/ic_sort_ascending"
             app:iconGravity="end" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 </LinearLayout>

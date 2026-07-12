@@ -29,6 +29,8 @@ import androidx.core.view.children
 import com.google.android.material.chip.Chip
 import com.saulhdev.feeder.R
 import com.saulhdev.feeder.data.content.FeedPreferences
+import com.saulhdev.feeder.data.db.models.Feed
+import com.saulhdev.feeder.data.entity.SORT_CHRONOLOGICAL
 import com.saulhdev.feeder.databinding.ContentSortingBinding
 import com.saulhdev.feeder.databinding.ContentSourcesBinding
 import com.saulhdev.feeder.databinding.ContentTagsBinding
@@ -37,6 +39,7 @@ import com.saulhdev.feeder.viewmodels.SortFilterViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 
@@ -46,14 +49,19 @@ class FilterBottomSheet(
     private val callback: () -> Unit
 ) : FrameLayout(context), View.OnClickListener {
 
-    private val mainScope = CoroutineScope(Dispatchers.Main + Job())
     private val viewModel: SortFilterViewModel by inject(SortFilterViewModel::class.java)
     private val prefs: FeedPreferences by inject(FeedPreferences::class.java)
+    private val mainScope = CoroutineScope(Dispatchers.Main + Job())
     private var _binding: SortFilterSheetBinding? = null
     private val binding get() = _binding!!
     private var sortingBinding: ContentSortingBinding
     private var sourcesBinding: ContentSourcesBinding
     private var tagsBinding: ContentTagsBinding
+
+    private var activeSources: List<Feed>
+    private var activeTags: List<String>
+    private val excludedSources: MutableSet<String>
+    private val excludedTags: MutableSet<String>
 
     init {
         _binding = SortFilterSheetBinding.inflate(LayoutInflater.from(context), this, true)
@@ -71,61 +79,131 @@ class FilterBottomSheet(
         binding.btnReset.setOnClickListener(this)
         tagsBinding.btnSelectAllTags.setOnClickListener(this)
         tagsBinding.btnDeselectAllTags.setOnClickListener(this)
-
         sourcesBinding.btnSelectAllSources.setOnClickListener(this)
         sourcesBinding.btnDeselectAllSources.setOnClickListener(this)
 
-        getSources()
-        getAllTags()
+        // Load excluded source/tag sets directly from prefs so we don't rely on the
+        // ViewModel StateFlow having emitted the latest values before the sheet opens.
+        excludedSources = prefs.sourcesFilter.getValue().toMutableSet()
+        excludedTags = prefs.tagsFilter.getValue().toMutableSet()
+
+        // Active sources/tags are read from the current StateFlow value; the coroutine
+        // below will rebuild the chips once the repository finishes loading.
+        val state = viewModel.sheetState.value
+        activeSources = state.activeSources
+        activeTags = state.activeTags
+
+        // Read sort preferences directly for the same reason.
+        val currentSort = prefs.sortingFilter.getValue()
+        val currentSortAsc = prefs.sortingAsc.getValue()
+        setupSortOptions(currentSort, currentSortAsc)
+        setupSources()
+        setupTags()
+
+        // The active sources/tags may not be loaded yet when the sheet first opens.
+        // Collect subsequent emissions and rebuild the chips when the data arrives.
+        mainScope.launch {
+            viewModel.sheetState.collect { state ->
+                val newSources = state.activeSources
+                val newTags = state.activeTags
+                if (newSources != activeSources || newTags != activeTags) {
+                    activeSources = newSources
+                    activeTags = newTags
+                    setupSources()
+                    setupTags()
+                }
+            }
+        }
     }
 
-    private fun getAllTags() {
-        mainScope.launch {
-            val selectedTags = prefs.tagsFilter.getValue().toCollection(ArrayList())
-            viewModel.sheetState.collect { state ->
-                tagsBinding.allTagsGroup.removeAllViews()
-                state.activeTags.forEach { tagName ->
-                    val chip = createChip(
-                        chipName = tagName,
-                        checked = selectedTags.contains(tagName),
-                        callback = { isChecked ->
-                            if (isChecked) {
-                                selectedTags.add(tagName)
-                            } else {
-                                selectedTags.remove(tagName)
-                            }
-                            updateTagButtonsVisibility()
-                        }
-                    )
-                    tagsBinding.allTagsGroup.addView(chip)
+    private fun setupSortOptions(currentSort: String, currentSortAsc: Boolean) {
+        // Check the chip that matches the current sort type.
+        when (currentSort) {
+            SORT_CHRONOLOGICAL -> sortingBinding.cgSortOptions.check(R.id.chip_sort_chronological)
+            context.getString(R.string.sorting_title) -> sortingBinding.cgSortOptions.check(R.id.chip_sort_title)
+            context.getString(R.string.sorting_source) -> sortingBinding.cgSortOptions.check(R.id.chip_sort_source)
+            else -> sortingBinding.cgSortOptions.check(R.id.chip_sort_chronological)
+        }
+
+        // Check the button that matches the current direction.
+        // XML order: left = desc (Newest/Descending), right = asc (Oldest/Ascending).
+        if (currentSortAsc) {
+            sortingBinding.toggleSortDirection.check(R.id.btn_sort_asc)
+        } else {
+            sortingBinding.toggleSortDirection.check(R.id.btn_sort_desc)
+        }
+
+        updateSortDirectionLabels(currentSort)
+
+        sortingBinding.cgSortOptions.setOnCheckedStateChangeListener { _, _ ->
+            val selectedSort = getSelectedSortOption()
+            updateSortDirectionLabels(selectedSort)
+        }
+    }
+
+    private fun getSelectedSortOption(): String {
+        return when (sortingBinding.cgSortOptions.checkedChipId) {
+            R.id.chip_sort_title -> context.getString(R.string.sorting_title)
+            R.id.chip_sort_source -> context.getString(R.string.sorting_source)
+            else -> SORT_CHRONOLOGICAL
+        }
+    }
+
+    private fun updateSortDirectionLabels(sort: String) {
+        if (sort == SORT_CHRONOLOGICAL) {
+            sortingBinding.tvSortDirectionLabel.visibility = VISIBLE
+            sortingBinding.btnSortDesc.text = context.getString(R.string.sort_newest)
+            sortingBinding.btnSortDesc.icon = AppCompatResources.getDrawable(context, R.drawable.ic_sort_descending)
+            sortingBinding.btnSortAsc.text = context.getString(R.string.sort_oldest)
+            sortingBinding.btnSortAsc.icon = AppCompatResources.getDrawable(context, R.drawable.ic_sort_ascending)
+        } else {
+            sortingBinding.tvSortDirectionLabel.visibility = INVISIBLE
+            sortingBinding.btnSortDesc.text = context.getString(R.string.sort_descending)
+            sortingBinding.btnSortDesc.icon = AppCompatResources.getDrawable(context, R.drawable.ic_sort_descending)
+            sortingBinding.btnSortAsc.text = context.getString(R.string.sort_ascending)
+            sortingBinding.btnSortAsc.icon = AppCompatResources.getDrawable(context, R.drawable.ic_sort_ascending)
+        }
+    }
+
+    private fun setupSources() {
+        sourcesBinding.allSourcesGroup.removeAllViews()
+        activeSources.sortedBy { it.title.lowercase() }.forEach { feed ->
+            val checked = !excludedSources.contains(feed.id.toString())
+            val chip = createChip(
+                chipName = feed.title,
+                checked = checked,
+            ) { isChecked ->
+                val feedId = feed.id.toString()
+                if (isChecked) {
+                    excludedSources.remove(feedId)
+                } else {
+                    excludedSources.add(feedId)
+                }
+                updateSourcesButtonsVisibility()
+            }
+            sourcesBinding.allSourcesGroup.addView(chip)
+        }
+        updateSourcesButtonsVisibility()
+    }
+
+    private fun setupTags() {
+        tagsBinding.allTagsGroup.removeAllViews()
+        activeTags.sortedBy { it.lowercase() }.forEach { tagName ->
+            val checked = !excludedTags.contains(tagName)
+            val chip = createChip(
+                chipName = tagName,
+                checked = checked,
+            ) { isChecked ->
+                if (isChecked) {
+                    excludedTags.remove(tagName)
+                } else {
+                    excludedTags.add(tagName)
                 }
                 updateTagButtonsVisibility()
             }
+            tagsBinding.allTagsGroup.addView(chip)
         }
-    }
-
-    private fun getSources() {
-        mainScope.launch {
-            val selectedSources = prefs.sourcesFilter.getValue().toCollection(ArrayList())
-            viewModel.sheetState.collect { state ->
-                val sources = state.activeSources.map { it.title }
-                sourcesBinding.allSourcesGroup.removeAllViews()
-                sources.forEach { sourceName ->
-                    val chip = createChip(
-                        chipName = sourceName,
-                        checked = selectedSources.contains(sourceName),
-                        callback = { isChecked ->
-                            if (isChecked) {
-                                selectedSources.add(sourceName)
-                            } else {
-                                selectedSources.remove(sourceName)
-                            }
-                        }
-                    )
-                    sourcesBinding.allSourcesGroup.addView(chip)
-                }
-            }
-        }
+        updateTagButtonsVisibility()
     }
 
     private fun createChip(chipName: String, checked: Boolean, callback: (Boolean) -> Unit): Chip {
@@ -182,83 +260,77 @@ class FilterBottomSheet(
     override fun onClick(v: View) {
         when (v.id) {
             R.id.btn_apply                -> {
-                val selectedSources = sourcesBinding.allSourcesGroup.children
-                    .filterIsInstance<Chip>()
-                    .filter { it.isChecked }
-                    .map { it.text.toString() }
-                    .toSet()
-
-                val selectedTags = tagsBinding.allTagsGroup.children
-                    .filterIsInstance<Chip>()
-                    .filter { it.isChecked }
-                    .map { it.text.toString() }
-                    .toSet()
-
-                val sortingFilter = sortingBinding.toggleSortDirection.checkedButtonId
-                val sortingOption = when (sortingFilter) {
+                val sortingOption = when (sortingBinding.toggleSortDirection.checkedButtonId) {
                     R.id.btn_sort_asc -> true
                     R.id.btn_sort_desc -> false
-                    else -> true
+                    else -> false
                 }
 
-                val sorting = sortingBinding.cgSortOptions.children
-                    .filterIsInstance<Chip>()
-                    .filter { it.isChecked }
-                    .map { it.text.toString() }
-                    .firstOrNull() ?: context.getString(R.string.sorting_chronological)
-
-                prefs.sourcesFilter.setValue(selectedSources)
-                prefs.tagsFilter.setValue(selectedTags)
+                prefs.sourcesFilter.setValue(excludedSources)
+                prefs.tagsFilter.setValue(excludedTags)
                 prefs.sortingAsc.setValue(sortingOption)
-                prefs.sortingFilter.setValue(sorting)
+                prefs.sortingFilter.setValue(getSelectedSortOption())
 
                 callback()
             }
 
             R.id.btn_reset                -> {
+                excludedSources.clear()
+                excludedTags.clear()
+
                 prefs.sourcesFilter.setValue(emptySet())
                 prefs.tagsFilter.setValue(emptySet())
                 prefs.sortingAsc.setValue(false)
-                prefs.sortingFilter.setValue(context.getString(R.string.sorting_chronological))
+                prefs.sortingFilter.setValue(SORT_CHRONOLOGICAL)
 
-                sourcesBinding.allSourcesGroup.children
-                    .filterIsInstance<Chip>()
-                    .forEach { it.isChecked = false }
-                tagsBinding.allTagsGroup.children
-                    .filterIsInstance<Chip>()
-                    .forEach { it.isChecked = false }
-                sortingBinding.cgSortOptions.check(R.id.chip_sort_chronological)
-                sortingBinding.toggleSortDirection.check(R.id.btn_sort_desc)
+                setupSortOptions(SORT_CHRONOLOGICAL, false)
+                setupSources()
+                setupTags()
 
-                updateTagButtonsVisibility()
                 callback()
             }
 
             R.id.btn_deselect_all_tags    -> {
                 tagsBinding.allTagsGroup.children
                     .filterIsInstance<Chip>()
-                    .forEach { it.isChecked = false }
+                    .forEach {
+                        it.isChecked = false
+                        excludedTags.add(it.text.toString())
+                    }
                 updateTagButtonsVisibility()
             }
 
             R.id.btn_select_all_tags      -> {
                 tagsBinding.allTagsGroup.children
                     .filterIsInstance<Chip>()
-                    .forEach { it.isChecked = true }
+                    .forEach {
+                        it.isChecked = true
+                        excludedTags.remove(it.text.toString())
+                    }
                 updateTagButtonsVisibility()
             }
 
             R.id.btn_deselect_all_sources -> {
                 sourcesBinding.allSourcesGroup.children
                     .filterIsInstance<Chip>()
-                    .forEach { it.isChecked = false }
+                    .forEach { chip ->
+                        chip.isChecked = false
+                        activeSources.find { it.title == chip.text.toString() }?.id?.toString()?.let {
+                            excludedSources.add(it)
+                        }
+                    }
                 updateSourcesButtonsVisibility()
             }
 
             R.id.btn_select_all_sources   -> {
                 sourcesBinding.allSourcesGroup.children
                     .filterIsInstance<Chip>()
-                    .forEach { it.isChecked = true }
+                    .forEach { chip ->
+                        chip.isChecked = true
+                        activeSources.find { it.title == chip.text.toString() }?.id?.toString()?.let {
+                            excludedSources.remove(it)
+                        }
+                    }
                 updateSourcesButtonsVisibility()
             }
         }
@@ -266,6 +338,7 @@ class FilterBottomSheet(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
+        mainScope.cancel()
         _binding = null
     }
 

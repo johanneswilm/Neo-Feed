@@ -15,7 +15,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -31,6 +33,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.saulhdev.feeder.R
 import com.saulhdev.feeder.data.content.FeedPreferences
+import com.saulhdev.feeder.data.entity.SORT_CHRONOLOGICAL
 import com.saulhdev.feeder.ui.components.ActionButton
 import com.saulhdev.feeder.ui.components.ChipsSwitch
 import com.saulhdev.feeder.ui.components.DeSelectAll
@@ -65,18 +68,18 @@ fun SortFilterSheet(
     var sourcesPrefVar by prefs.sourcesFilter
     var tagsPrefVar by prefs.tagsFilter
 
-    var sortOption by remember(state.sortFilter.sort) {
-        mutableStateOf(state.sortFilter.sort)
-    }
-    var sortAscOption by remember(state.sortFilter.sortAsc) {
-        mutableStateOf(state.sortFilter.sortAsc)
-    }
-    val sourcesOption = remember(state.sortFilter.sourcesFilter) {
-        mutableStateListOf(*state.sortFilter.sourcesFilter.toTypedArray())
-    }
+    var sortOption by remember { mutableStateOf(state.sortFilter.sort) }
+    var sortAscOption by remember { mutableStateOf(state.sortFilter.sortAsc) }
+    val sourcesOption = remember { mutableStateListOf<String>() }
+    val tagsOption = remember { mutableStateListOf<String>() }
 
-    val tagsOption = remember(state.sortFilter.tagsFilter) {
-        mutableStateListOf(*state.sortFilter.tagsFilter.toTypedArray())
+    LaunchedEffect(state.sortFilter) {
+        sortOption = state.sortFilter.sort
+        sortAscOption = state.sortFilter.sortAsc
+        sourcesOption.clear()
+        sourcesOption.addAll(state.sortFilter.sourcesFilter)
+        tagsOption.clear()
+        tagsOption.addAll(state.sortFilter.tagsFilter)
     }
 
     Scaffold(
@@ -153,14 +156,23 @@ fun SortFilterSheet(
                             }
                         }
                     }
+                    val isChronological = sortOption == SORT_CHRONOLOGICAL
+                    if (isChronological) {
+                        Text(
+                            text = stringResource(id = R.string.first_item),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 4.dp),
+                        )
+                    }
                     ChipsSwitch(
-                        firstTextId = R.string.sort_ascending,
-                        firstIcon = Phosphor.SortAscending,
-                        secondTextId = R.string.sort_descending,
-                        secondIcon = Phosphor.SortDescending,
-                        firstSelected = sortAscOption,
+                        firstTextId = if (isChronological) R.string.sort_newest else R.string.sort_descending,
+                        firstIcon = Phosphor.SortDescending,
+                        secondTextId = if (isChronological) R.string.sort_oldest else R.string.sort_ascending,
+                        secondIcon = Phosphor.SortAscending,
+                        firstSelected = !sortAscOption,
                         onCheckedChange = { checked ->
-                            sortAscOption = checked
+                            sortAscOption = !checked
                         }
                     )
                 }
@@ -177,9 +189,7 @@ fun SortFilterSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         state.activeSources.sortedBy { it.title.lowercase() }.forEach {
-                            val checked by remember(sourcesOption.toString()) {
-                                mutableStateOf(!sourcesOption.contains(it.id.toString()))
-                            }
+                            val checked = !sourcesOption.contains(it.id.toString())
 
                             SelectChip(
                                 text = it.title,
@@ -204,9 +214,7 @@ fun SortFilterSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         state.activeTags.sortedBy { it.lowercase() }.forEach {
-                            val checked by remember(tagsOption.toString()) {
-                                mutableStateOf(!tagsOption.contains(it))
-                            }
+                            val checked = !tagsOption.contains(it)
 
                             SelectChip(
                                 text = it,

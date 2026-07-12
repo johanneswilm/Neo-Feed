@@ -171,8 +171,6 @@ fun ChipsSwitch(
     firstSelected: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
 ) {
-    val (firstSelected, selectFirst) = remember { mutableStateOf(firstSelected) }
-
     SingleChoiceSegmentedButtonRow(
         modifier = Modifier
             .fillMaxWidth(),
@@ -186,7 +184,6 @@ fun ChipsSwitch(
             count = 2,
             onClick = {
                 onCheckedChange(true)
-                selectFirst(true)
             }
         )
         SegmentedTabButton(
@@ -197,7 +194,6 @@ fun ChipsSwitch(
             count = 2,
             onClick = {
                 onCheckedChange(false)
-                selectFirst(false)
             }
         )
     }

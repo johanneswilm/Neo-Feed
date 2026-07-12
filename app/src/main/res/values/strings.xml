@@ -143,8 +143,11 @@
     <string name="sorting_chronological">Chronological</string>
     <string name="sorting_title">Title</string>
     <string name="sorting_source">Source</string>
-    <string name="sort_ascending">Ascending</string>
+    <string name="sort_newest">Newest</string>
+    <string name="sort_oldest">Oldest</string>
     <string name="sort_descending">Descending</string>
+    <string name="sort_ascending">Ascending</string>
+    <string name="first_item">First item</string>
     <string name="select_all">Select all</string>
     <string name="deselect_all">Deselect all</string>
     <string name="item_selected">Item selected</string>

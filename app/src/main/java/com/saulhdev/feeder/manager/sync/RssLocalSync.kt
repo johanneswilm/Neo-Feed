@@ -197,8 +197,9 @@ private suspend fun syncFeed(
 
     val okHttpClient = OkHttpClient.Builder()
         .build()
+    val feedUrl = feedSql.url.toHttpsIfNeeded()
     val response: Response =
-        okHttpClient.getResponse(url = feedSql.url, forceNetwork = forceNetwork)
+        okHttpClient.getResponse(url = feedUrl, forceNetwork = forceNetwork)
     val feedParser = FeedParser(okHttpClient)
     val feed: JsonFeed = response.use {
         response.body.let { responseBody ->
@@ -252,6 +253,7 @@ private suspend fun syncFeed(
     feedsRepo.updateSource(
         syncedFeed.copy(
             title = syncedFeed.title,
+            url = if (feedUrl != feedSql.url) feedUrl else syncedFeed.url,
             feedImage = feed.icon?.let { sloppyLinkToStrictURLNoThrows(it) }
                 ?: syncedFeed.feedImage
         ))
@@ -288,6 +290,18 @@ private suspend fun syncFeed(
 }
 
 class ResponseFailure(message: String?) : Exception(message)
+
+fun java.net.URL.toHttpsIfNeeded(): java.net.URL {
+    return if (protocol == "http") {
+        try {
+            java.net.URL(toString().replaceFirst("http://", "https://"))
+        } catch (_: Exception) {
+            this
+        }
+    } else {
+        this
+    }
+}
 
 fun List<Pair<Article, String>>.filterBlockedWords(): List<Pair<Article, String>> {
     val blocked = prefs.blockedWords.getValue()

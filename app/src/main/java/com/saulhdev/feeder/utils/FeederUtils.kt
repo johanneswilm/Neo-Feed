@@ -112,7 +112,9 @@ fun getBackgroundOptions(context: Context): Map<String, String> {
 }
 
 /**
- * Ensures a url is valid, having a scheme and everything. It turns 'google.com' into 'https://google.com'.
+ * Ensures a url is valid, having a scheme and everything.
+ * Bare domain names like 'sports.com/feed.xml' become 'https://sports.com/feed.xml'.
+ * Bare IP addresses like '192.168.1.1/feed.xml' become 'http://192.168.1.1/feed.xml'.
  * Existing http:// URLs for normal domain names are upgraded to https://.
  */
 fun sloppyLinkToStrictURL(url: String): URL {
@@ -120,7 +122,9 @@ fun sloppyLinkToStrictURL(url: String): URL {
         // If no exception, it's valid
         URL(url).toHttpsIfNeeded()
     } catch (_: MalformedURLException) {
-        URL("https://$url")
+        val host = url.substringBefore('/').substringBefore(':')
+        val scheme = if (host.isLocalHostOrIpAddress()) "http://" else "https://"
+        URL("$scheme$url")
     }
 }
 
@@ -129,7 +133,7 @@ fun sloppyLinkToStrictURL(url: String): URL {
  * Localhost and numeric IP addresses are left unchanged.
  */
 fun URL.toHttpsIfNeeded(): URL {
-    return if (protocol == "http" && host.isNotEmpty() && !host.isLocalHost()) {
+    return if (protocol == "http" && host.isNotEmpty() && !host.isLocalHostOrIpAddress()) {
         try {
             URL(toString().replaceFirst("http://", "https://"))
         } catch (_: Exception) {
@@ -140,7 +144,7 @@ fun URL.toHttpsIfNeeded(): URL {
     }
 }
 
-private fun String.isLocalHost(): Boolean {
+private fun String.isLocalHostOrIpAddress(): Boolean {
     return this == "localhost" ||
             this == "127.0.0.1" ||
             this == "::1" ||

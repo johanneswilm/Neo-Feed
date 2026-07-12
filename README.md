@@ -29,6 +29,22 @@
 
 [![Neo Applications Banner](neo_banner.png)](https://github.com/NeoApplications)
 
+## About this fork :sparkles:
+
+This is a community-maintained, vibe-coded modification of [Neo Feed](https://github.com/NeoApplications/Neo-Feed). It keeps the original feed-replacement functionality and adds a number of fixes and features that have not yet landed upstream:
+
+- **Keyboard fix** — Resolves the long-standing bug where the on-screen keyboard would not appear in a launcher's app drawer while Neo-Feed was enabled ([upstream issue #56](https://github.com/NeoApplications/Neo-Feed/issues/56)).
+- **Folder crash fix for Neo-Launcher** — Applies the matching folder-crash fix to [Neo-Launcher](https://github.com/NeoApplications/Neo-Launcher) so app folders open reliably again.
+- **Integrated community improvements** — Pulls in useful changes developed by other contributors around Neo-Feed.
+- **Expanded suggested feeds** — Adds new suggested-feed catalogues, including **Scandinavian**, **German**, and more **Spanish-language** sources.
+- **Mastodon account source** — Lets you add a Mastodon home timeline as a feed source. For each Mastodon source you can configure:
+  - **Must contain a link** — only show posts that include at least one URL.
+  - **Must contain a picture** — only show posts that include an image.
+  - **Hide replies** — hide replies and show only original posts.
+- **Global blocked words** — Adds a global word filter so you can hide articles containing terms you are not interested in.
+
+Debug test builds of both **Neo-Feed** and **Neo-Launcher** are published on the [Releases](https://github.com/johanneswilm/Neo-Feed/releases) page.
+
 ## Screenshots :framed_picture:
 
 ### Neo Launcher integration, local reader and feeds customization

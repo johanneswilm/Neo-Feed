@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 11,
-    "identityHash": "3251040f1ade49a8dfb02d4ef527d643",
+    "identityHash": "1be214aff58d4a34774902fadd4a445a",
     "entities": [
       {
         "tableName": "Feeds",
@@ -281,6 +281,33 @@
             ],
             "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_Article_feedId` ON `${TABLE_NAME}` (`feedId`)"
+          },
+          {
+            "name": "index_Article_primarySortTime",
+            "unique": false,
+            "columnNames": [
+              "primarySortTime"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Article_primarySortTime` ON `${TABLE_NAME}` (`primarySortTime`)"
+          },
+          {
+            "name": "index_Article_bookmarked",
+            "unique": false,
+            "columnNames": [
+              "bookmarked"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Article_bookmarked` ON `${TABLE_NAME}` (`bookmarked`)"
+          },
+          {
+            "name": "index_Article_pinned",
+            "unique": false,
+            "columnNames": [
+              "pinned"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Article_pinned` ON `${TABLE_NAME}` (`pinned`)"
           }
         ],
         "foreignKeys": [
@@ -306,7 +333,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3251040f1ade49a8dfb02d4ef527d643')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1be214aff58d4a34774902fadd4a445a')"
     ]
   }
 }
